@@ -1,0 +1,51 @@
+[package]
+authors = ["Tristram Gräbener <tristram@midnighttrains.com>"]
+edition = "2018"
+readme = "README.md"
+name = "tixy"
+version = "0.1.0"
+
+[dependencies]
+cortex-m = "*"
+cortex-m-rt = "*"
+cortex-m-semihosting = "*"
+panic-halt = "0.2"
+embedded-hal = "0.2"
+rtt-target = { version = "*", features = ["cortex-m"] }
+nb = "*"
+panic-rtt-target = { version = "*", features = ["cortex-m"] }
+
+# Uncomment for the panic example.
+# panic-itm = "0.4.1"
+
+# Uncomment for the allocator example.
+# alloc-cortex-m = "0.4.0"
+
+# Uncomment for the device example.
+# Update `memory.x`, set target to `thumbv7em-none-eabihf` in `.cargo/config`,
+# and then use `cargo build --examples device` to build it.
+# [dependencies.stm32f3]
+# features = ["stm32f303", "rt"]
+# version = "0.7.1"
+
+[dependencies.stm32f1]
+version = "0.13"
+#features = ["stm32f1", "rt"]
+
+[dependencies.stm32f1xx-hal]
+default-features = false
+version = "0.7"
+features = ["stm32f103", "rt"]
+
+# this lets you use `cargo fix`!
+[[bin]]
+name = "tixy"
+test = false
+bench = false
+
+[profile.release]
+codegen-units = 1 # better optimizations
+debug = true # symbols are nice and they don't increase the size on Flash
+lto = true # better optimizations
+
+
