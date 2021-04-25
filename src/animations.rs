@@ -1,7 +1,7 @@
 use micromath::F32Ext;
 use smart_leds::RGB8;
 
-pub fn tixy(t: f32, i: usize, x: usize, y: usize) -> RGB8 {
+pub fn tixy(t: f32, _i: usize, _x: usize, _y: usize) -> RGB8 {
     render(t.sin())
 }
 

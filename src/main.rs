@@ -6,14 +6,14 @@ mod animations;
 use core::panic::PanicInfo;
 use rtic::app;
 use rtt_target::{rprintln, rtt_init_print};
-use stm32f1xx_hal::gpio::{gpiob::*, Alternate, PushPull};
+use stm32f1xx_hal::gpio::{gpiob, Alternate, PushPull};
 use stm32f1xx_hal::{pac, prelude::*, spi, timer};
 
 use smart_leds::{SmartLedsWrite, RGB8};
 use ws2812_spi::Ws2812;
 
 const FREQ_HZ: u32 = 50;
-type PINS = (spi::NoSck, spi::NoMiso, PB15<Alternate<PushPull>>);
+type PINS = (spi::NoSck, spi::NoMiso, gpiob::PB15<Alternate<PushPull>>);
 type SPI = spi::Spi<pac::SPI2, spi::Spi2NoRemap, PINS, u8>;
 
 #[app(device = stm32f1xx_hal::stm32, peripherals = true)]
@@ -48,27 +48,19 @@ const APP: () = {
             .start_count_down(FREQ_HZ.hz());
         timer.listen(timer::Event::Update);
 
-        // Acquire the GPIOB peripheral
+        // Acquire the GPIOB peripheral: we’ll use it for the SPI output sent to ws2812 leds
         let mut gpiob = cx.device.GPIOB.split(&mut rcc.apb2);
-        let pins = (
-            spi::NoSck,
-            spi::NoMiso,
-            gpiob.pb15.into_alternate_push_pull(&mut gpiob.crh),
-        );
-        let spi_mode = spi::Mode {
-            polarity: spi::Polarity::IdleLow,
-            phase: spi::Phase::CaptureOnFirstTransition,
-        };
+        let pb15 = gpiob.pb15.into_alternate_push_pull(&mut gpiob.crh);
         let spi = spi::Spi::spi2(
             cx.device.SPI2,
-            pins,
-            spi_mode,
-            3000.khz(),
+            (spi::NoSck, spi::NoMiso, pb15),
+            ws2812_spi::MODE,
+            3.mhz(),
             clocks,
             &mut rcc.apb1,
         );
-
         let ws = Ws2812::new(spi);
+
         init::LateResources {
             timer,
             leds: [RGB8::default(); 256],
